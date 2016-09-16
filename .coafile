@@ -1,0 +1,13 @@
+[Default]
+files = LCM/*.asm, README.md
+
+default_actions = SpaceConsistencyBear: ApplyPatchAction
+
+bears = SpaceConsistencyBear
+use_spaces = true
+
+[Todo]
+enabled = false
+
+bears = KeywordBear
+keywords = TODO, FIXME
