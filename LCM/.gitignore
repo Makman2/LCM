@@ -1,0 +1,6 @@
+# Build artifacts
+Debug/
+Release/
+
+# Machine tied project configurations
+LCM.componentinfo.xml
