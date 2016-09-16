@@ -2,6 +2,17 @@
 .equ LCM_ARITHMETIC = 1
 
 
+; Loads a full-word address into Z.
+;
+; This macro is especially useful for loading addresses to data in program
+; memory. As labels are organized using word-addresses, the load instruction's
+; operands ain't.
+.macro load_word_address_into_Z
+    ldi ZL, low(@0 << 1)
+    ldi ZH, high(@0 << 1)
+.endmacro
+
+
 ; Adds a 16bit value to another 16bit value.
 ;
 ; The first two register parameters are the first operand and target of the
