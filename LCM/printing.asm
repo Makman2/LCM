@@ -9,6 +9,40 @@ print_char:
     rjmp lcd4put
 
 
+; Prints a (null-terminated) string to display.
+;
+; The address of the string (in program memory!) has to be passed via the Z
+; registers.
+;
+; Example:
+; .db string "HELLO WORLD", 0
+; ldi ZL, low(string << 1)
+; ldi ZH, high(string << 1)
+; rcall print_string
+print_string:
+    push r0
+    push r16
+    push ZL
+    push ZH
+
+    _printing_print_string_loop:
+        lpm
+        adiw ZH:ZL, 1
+        tst r0
+        breq _printing_print_string_break
+        mov r16, r0
+        rcall print_char
+        rjmp _printing_print_string_loop
+    _printing_print_string_break:
+
+    pop ZH
+    pop ZL
+    pop r16
+    pop r0
+
+    ret
+
+
 ; Prints a char passed as an immediate value.
 .macro print_immediate_char
     push r16

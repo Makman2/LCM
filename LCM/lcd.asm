@@ -143,37 +143,6 @@ lcd4put:
     ret
 
 
-; Send string from program memory to LCD.
-;
-; The address of the string (in program memory!) has to be passed via the Z
-; registers.
-;
-; To properly use this function, the display has to be initialized first (via
-; calling lcd4ini).
-lcd4puts:
-    push r0
-    push r16
-    push ZL
-    push ZH
-
-    _lcd_lcd4puts_loop:
-        lpm
-        adiw ZH:ZL, 1
-        tst r0
-        breq _lcd_lcd4puts_break
-        mov r16, r0
-        rcall lcd4put
-        rjmp _lcd_lcd4puts_loop
-    _lcd_lcd4puts_break:
-
-    pop ZH
-    pop ZL
-    pop r16
-    pop r0
-
-    ret
-
-
 ; Updates the cursor position (curpos register) accordingly after a single
 ; character write.
 lcd4cur:
