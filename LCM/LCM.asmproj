@@ -15,7 +15,7 @@
     <Name>LCM</Name>
     <RootNamespace>LCM</RootNamespace>
     <ToolchainFlavour>Native</ToolchainFlavour>
-    <EntryFile>$(MSBuildProjectDirectory)\main.asm</EntryFile>
+    <EntryFile>$(MSBuildProjectDirectory)\start.asm</EntryFile>
     <KeepTimersRunning>true</KeepTimersRunning>
     <OverrideVtor>false</OverrideVtor>
     <CacheFlash>true</CacheFlash>
@@ -110,6 +110,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="printing.asm">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="start.asm">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="timing.asm">
