@@ -42,24 +42,23 @@ main:
         rjmp _main_main_measure
 
 
+; Manual termination with 0, 0 is needed, to get an even number of bytes and
+; to terminate string with 0.
+welcome_message: .db "  PROJECT LCM!  ", 0, 0
+
+
+; Prints the welcome message.
 print_welcome_message:
+    push ZL
+    push ZH
+
     rcall reset_cursor
 
-    ; FIXME: Use a function that prints a string.
-    print_immediate_char ' '
-    print_immediate_char ' '
-    print_immediate_char 'P'
-    print_immediate_char 'R'
-    print_immediate_char 'O'
-    print_immediate_char 'J'
-    print_immediate_char 'E'
-    print_immediate_char 'C'
-    print_immediate_char 'T'
-    print_immediate_char ' '
-    print_immediate_char 'L'
-    print_immediate_char 'C'
-    print_immediate_char 'M'
-    print_immediate_char '!'
+    load_word_address_into_Z welcome_message
+    rcall print_string
+
+    pop ZH
+    pop ZL
 
     ret
 
