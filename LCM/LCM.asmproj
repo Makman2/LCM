@@ -109,6 +109,9 @@
     <Compile Include="main.asm">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="printing.asm">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="timing.asm">
       <SubType>Code</SubType>
     </Compile>
