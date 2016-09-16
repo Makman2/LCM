@@ -1,6 +1,6 @@
 ; When using this module, place this piece of code to your .ORG directives!
 ;
-; .org 0x0006
+; .org OVF1addr
 ;     rjmp handle_timer_overflow_interrupt
 
 .ifndef LCM_TIMING
@@ -8,10 +8,10 @@
 
 
 .message "--------------------------------------------------------------------"
-.message "To properly use the timing module, place this piece of code to your"
-.message ".ORG directives of the main script!"
+.message "To properly use the timing module, place this piece of code to"
+.message "your ORG directives of the main script!"
 .message ""
-.message ".org 0x0006"
+.message "(dot)org OVF1addr"
 .message "    rjmp handle_timer_overflow_interrupt"
 .message "--------------------------------------------------------------------"
 
