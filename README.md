@@ -1,2 +1,3 @@
 # LCM
-Controller software for the capacitance measuring board
+
+Software written in assembly for a custom made capacitance measuring board.
