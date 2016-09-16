@@ -18,6 +18,10 @@
 
 
 main:
+    ; Turn on display light.
+    ldi r16, LCD_LIGHT_ON
+    rcall lcd4lightcontrol
+
     rcall print_welcome_message
     ; No need to wait here, the discharge_capacitor function below
     ; does this implicitly (for a second).

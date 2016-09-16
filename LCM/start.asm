@@ -47,10 +47,6 @@ initialize:
     ; Initialize LCD display at PORTC.
     rcall lcd4ini
 
-    ; Turn on display light.
-    ldi r16, LCD_LIGHT_ON
-    rcall lcd4lightcontrol
-
     ; Initialize timing.
     rcall initialize_timing
 
