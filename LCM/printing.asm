@@ -216,4 +216,80 @@ print_hexadecimal_value:
 
     ret
 
+
+; Prints a dword-value (passed via r15:12) in decimal format to display.
+print_decimal_dword_unsigned:
+    push r8
+    push r9
+    push r10
+    push r11
+    push r12
+    push r13
+    push r14
+    push r15
+    push r16
+    push r17
+    push r18
+    push r19
+    push r20
+    push r21
+
+    ; Initialize digits counter.
+    clr r20
+
+    ; Load '10' into divisor registers.
+    clr r19
+    clr r18
+    clr r17
+    ldi r16, 10
+
+    _printing_print_decimal_dword_unsigned_loop:
+        rcall div32u
+
+        ; Initialize with ASCII number offset.
+        ldi r21, 0x30
+        ; 'given-dword modulo 10' can't be higher than 9, which fits into
+        ; a single register. So we just need to take the lowest result byte.
+        add r21, r8
+
+        ; And push char on stack, as the numbers need to be reverted for
+        ; 'print_char'.
+        push r21
+        ; Increment digits counter.
+        inc r20
+
+        tst r12
+        brne _printing_print_decimal_dword_unsigned_loop
+        tst r13
+        brne _printing_print_decimal_dword_unsigned_loop
+        tst r14
+        brne _printing_print_decimal_dword_unsigned_loop
+        tst r15
+        brne _printing_print_decimal_dword_unsigned_loop
+
+    ; Print back stuff:
+    _printing_print_decimal_dword_unsigned_print_loop:
+        pop r16
+        rcall print_char
+
+        dec r20
+        brne _printing_print_decimal_dword_unsigned_print_loop
+
+    pop r21
+    pop r20
+    pop r19
+    pop r18
+    pop r17
+    pop r16
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop r11
+    pop r10
+    pop r9
+    pop r8
+
+    ret
+
 .endif
