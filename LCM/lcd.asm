@@ -171,4 +171,56 @@ lcd4cur:
 
     ret
 
+
+; Sets the display cursor (position has to be passed via r16).
+;
+; The display has two lines with 16 chars each, so the range is from
+; 0x00-0x1F. Values outside of this range are ignored.
+lcd4setcur:
+    push r16
+    push r17
+    push r18
+
+    ; Divide r16 by 16 (0x10).
+    mov r17, r16
+    lsr r17
+    lsr r17
+    lsr r17
+    lsr r17
+
+    ; Load the row base address for line number.
+    breq _lcd_lcd4setcur_case0
+    cpi r17, 1
+    ; else case when branching: Invalid position specified,
+    ; ignore call.
+    brne _lcd_lcd4setcur_return
+        ; case r17 == 1
+        ldi r18, 0x40
+        rjmp _lcd_lcd4setcur_endif
+    _lcd_lcd4setcur_case0:
+        ; case r17 == 0
+        clr r18
+    _lcd_lcd4setcur_endif:
+
+    ; Get column address.
+    andi r16, 0xF
+
+    ; Assemble complete address.
+    add r16, r18
+
+    ; Set global cursor position.
+    mov curpos, r16
+
+    ; Assemble display command.
+    ori r16, 0x80
+    rcall lcd4com
+
+    _lcd_lcd4setcur_return:
+
+    pop r18
+    pop r17
+    pop r16
+
+    ret
+
 .endif
