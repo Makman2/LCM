@@ -116,4 +116,60 @@
     ldd @3, @4+3
 .endmacro
 
+
+; Performs a dword (32bit) division.
+;
+; The dividend needs to be placed inside r15:12, while the divisor is placed
+; inside r19:16. The result of the division will be placed in the same
+; registers as the dividend (r15:12), and the remainder is placed inside r11:8.
+div32u:
+    push r20
+
+    ; Clear the remainder return value and at last the carry too.
+    clr r8
+    clr r9
+    clr r10
+    sub r11, r11
+
+    ldi r20, 33
+    _arithmetic_div32u_loop:
+        ; Left shift dividend.
+        rol r12
+        rol r13
+        rol r14
+        rol r15
+
+        ; Decrement loop counter.
+        dec r20
+        brne _arithmetic_div32u_not_done_yet
+            pop r20
+            ret
+        _arithmetic_div32u_not_done_yet:
+
+        ; Left shift dividend into remainder.
+        rol r8
+        rol r9
+        rol r10
+        rol r11
+
+        ; remainder = remainder - divisor
+        sub r8, r16
+        sbc r9, r17
+        sbc r10, r18
+        sbc r11, r19
+
+        ; If result negative, restore remainder.
+        brcc _arithmetic_div32u_else
+            add r8, r16
+            adc r9, r17
+            adc r10, r18
+            adc r11, r19
+
+            ; Clear carry to be shifted into result.
+            clc
+            rjmp _arithmetic_div32u_loop
+        _arithmetic_div32u_else:
+            sec
+            rjmp _arithmetic_div32u_loop
+
 .endif
