@@ -59,6 +59,14 @@ reset_cursor:
     rjmp lcd4reset_cursor
 
 
+; Sets the display cursor (position has to be passed via r16).
+;
+; The display has two lines with 16 chars each, so the range is from
+; 0x00-0x1F. Values outside of this range are ignored.
+set_cursor:
+    rjmp lcd4setcur
+
+
 ; Prints a value (passed via r16) in binary form to display.
 print_binary_value:
     push r16
