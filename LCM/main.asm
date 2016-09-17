@@ -221,26 +221,43 @@ calculate_capacitance_from_time_difference:
     ret
 
 
+description_text: .db "cycles at 16MHz", 0
+
+
 ; Prints the result from 'measure' to the LCD display.
 ;
 ; TODO Currently takes r3:0 with the measured time.
 print_result:
+    push r12
+    push r13
+    push r14
+    push r15
     push r16
+    push ZL
+    push ZH
 
     rcall reset_cursor
 
-    print_immediate_char '0'
-    print_immediate_char 'x'
+    mov r15, r3
+    mov r14, r2
+    mov r13, r1
+    mov r12, r0
 
-    mov r16, r3
-    rcall print_hexadecimal_value
-    mov r16, r2
-    rcall print_hexadecimal_value
-    mov r16, r1
-    rcall print_hexadecimal_value
-    mov r16, r0
-    rcall print_hexadecimal_value
+    rcall print_decimal_dword_unsigned
 
+    ; Select second row.
+    ldi r16, 0x10
+    rcall set_cursor
+
+    load_word_address_into_Z description_text
+    rcall print_string
+
+    pop ZH
+    pop ZL
     pop r16
+    pop r15
+    pop r14
+    pop r13
+    pop r12
 
     ret
