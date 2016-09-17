@@ -3,7 +3,8 @@ files = LCM/*.asm, README.md
 
 default_actions = SpaceConsistencyBear: ApplyPatchAction
 
-bears = SpaceConsistencyBear
+bears = LineLengthBear, SpaceConsistencyBear
+max_line_length = 80
 use_spaces = true
 
 [Todo]
