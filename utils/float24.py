@@ -28,7 +28,7 @@ def bin_to_int(x):
             result += int(letter) / fact
         return result
 
-        
+
 def float24_to_real(x):
     """
     Converts a float24 (in integer format) to a real float.
@@ -60,7 +60,7 @@ def to_float24(x):
     '0x3f0000'
     >>> hex(to_float24(3.75))
     '0x40e000'
-    
+
     :param x: The number to convert.
     :return:  The float24.
     """
@@ -98,7 +98,7 @@ def to_float24(x):
     factor = 1
     for i in range(16):  # 16 because our fraction is that long.
         factor /= 2
-        
+
         if factor <= x:
             digits += '1'
             x -= factor
