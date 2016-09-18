@@ -1,6 +1,8 @@
 .ifndef LCM_PRINTING
 .equ LCM_PRINTING = 1
 
+.include "float24.asm"
+.include "float24printtable.asm"
 .include "lcd.asm"
 
 
@@ -289,6 +291,160 @@ print_decimal_dword_unsigned:
     pop r10
     pop r9
     pop r8
+
+    ret
+
+
+.equ PRINT_FLOAT24_SUCCESS = 0
+.equ PRINT_FLOAT24_OVERFLOW = 1
+
+
+; Prints a float24 (passed via r18:16) to screen (2 digits rounded).
+;
+; The non fractional part is converted into a 32bit unsigned integer to be
+; represented. This function will return inside r19 PRINT_FLOAT24_SUCCESS (0)
+; if everything went fine and the float24 is not too large, otherwise
+; PRINT_FLOAT24_OVERFLOW (1). If the float24 is too large, no printing will
+; happen to display.
+print_float24:
+    push r16
+    push r17
+    push r18
+    push r20
+    push r21
+    push r22
+    ; Don't use r23, as this is the reserved register 'curpos' from the
+    ; lcd module. As we use printing facilities here, we can't use that
+    ; register.
+    push r24
+    push r25
+    push r26
+
+    ; Get sign.
+    mov r26, r18
+    andi r26, 0b10000000
+
+    ; Get exponent.
+    andi r18, 0b01111111
+    ldi r19, FLOAT24_BIAS
+    sub r18, r19
+
+    clr r25
+    clr r24
+    clr r22
+    ldi r21, 1  ; Implicit '1'
+    mov r20, r17
+    mov r19, r16
+
+    cpi r18, 0
+    breq shifting_done
+    brlt negative_shift
+        shift_loop:
+            ; float24 fraction part.
+            lsl r19
+            rol r20
+            ; Integer part.
+            rol r21
+            rol r22
+            rol r24
+            rol r25
+            ; If we have a carry over, this means we have an integer overflow
+            ; and this algorithm isn't able to print the number.
+            brcs _printing_print_float24_overflow
+
+            dec r18
+            brne shift_loop
+
+        rjmp shifting_done;
+
+    negative_shift:
+        negative_shift_loop:
+            lsr r21
+            ror r20
+            ; No need to shift to r19, the floating table uses only the first
+            ; 8 bits of fraction. So everything below r20 will be cut away
+            ; anyway.
+
+            inc r18
+            brne negative_shift_loop
+
+    shifting_done:
+
+    ; Calculate the 2 most significant digits.
+    load_word_address_into_Z float24printtable
+
+    ; As each fractional part is made up of 2 digits, we need to offset the
+    ; address by multiplying with 2.
+    mov r18, r20
+    clr r19
+    lsl r18
+    rol r19
+
+    ; Get address to correct entry of printtable.
+    add ZL, r18
+    adc ZH, r19
+
+    ; Load entry.
+    lpm r18, Z+
+    lpm r19, Z
+
+    ; Start printing.
+
+    push r16
+    push r15
+    push r14
+    push r13
+    push r12
+
+    ; Print sign.
+    cpi r26, 0b10000000
+    brne _printing_print_float24_no_sign
+        ldi r16, '-'
+        rcall print_char
+    _printing_print_float24_no_sign:
+
+    mov r15, r25
+    mov r14, r24
+    mov r13, r22
+    mov r12, r21
+
+    ; Print non-fractional part.
+    rcall print_decimal_dword_unsigned
+
+    ; Print comma.
+    ldi r16, '.'
+    rcall print_char
+
+    ; Print fraction.
+    mov r16, r18
+    rcall print_char
+    mov r16, r19
+    rcall print_char
+
+    pop r12
+    pop r13
+    pop r14
+    pop r15
+    pop r16
+
+    ldi r19, PRINT_FLOAT24_SUCCESS
+
+    rjmp _printing_print_float24_exit
+
+    _printing_print_float24_overflow:
+        ldi r19, PRINT_FLOAT24_OVERFLOW
+
+    _printing_print_float24_exit:
+
+    pop r26
+    pop r25
+    pop r24
+    pop r22
+    pop r21
+    pop r20
+    pop r18
+    pop r17
+    pop r16
 
     ret
 
