@@ -82,4 +82,35 @@ float24_from_unsigned_int32:
 
     ret
 
+
+; Checks if the given float24 (r18:16) is infinite.
+; If so, r19 = 1, else r19 = 0.
+float24_isinf:
+    push r16
+    push r17
+    push r18
+
+    tst r16
+    brne _float24_float24_isinf_false
+    tst r17
+    brne _float24_float24_isinf_false
+    andi r18, 0b01111111
+    cpi r18, 0b01111111
+    brne _float24_float24_isinf_false
+
+    ldi r19, 1
+    rjmp _float24_float24_isinf_exit
+
+    _float24_float24_isinf_false:
+
+    clr r19
+
+    _float24_float24_isinf_exit:
+
+    pop r18
+    pop r17
+    pop r16
+
+    ret
+
 .endif
