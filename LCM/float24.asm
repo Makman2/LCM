@@ -83,6 +83,144 @@ float24_from_unsigned_int32:
     ret
 
 
+; Multiplies two float24's.
+;
+; The first factor is placed into r18:16 and the second one into r22:20.
+; The result is placed into r18:16.
+float24_mul:
+    push r19
+    push r23
+    push r24
+
+    ; Extract and compute sign.
+    mov r19, r18
+    andi r19, (1 << 7)
+    mov r23, r22
+    andi r23, (1 << 7)
+
+    eor r19, r23
+
+    ; Handle case when one of the operands is zero.
+    tst r18
+    brne _float24_float24_mul_operand1_not_zero
+    tst r17
+    brne _float24_float24_mul_operand1_not_zero
+    tst r16
+    brne _float24_float24_mul_operand1_not_zero
+        ; Operand1 is zero!
+        ; As r18:16 is already 0 and these are our return registers, not much
+        ; to do. Just reuse the already computed sign.
+        mov r18, r19
+        rjmp _float24_float24_mul_exit
+
+    _float24_float24_mul_operand1_not_zero:
+
+    tst r22
+    brne _float24_float24_mul_operand2_not_zero
+    tst r21
+    brne _float24_float24_mul_operand2_not_zero
+    tst r20
+    brne _float24_float24_mul_operand2_not_zero
+        ; Operand2 is zero!
+        mov r18, r19
+        clr r17
+        clr r16
+        rjmp _float24_float24_mul_exit
+
+    _float24_float24_mul_operand2_not_zero:
+
+    ; Extract and compute exponent.
+    mov r23, r18
+    andi r23, 0b01111111
+    mov r24, r22
+    andi r24, 0b01111111
+
+    add r23, r24
+    ; The -1 is needed to compensate the shifting on both operands together
+    ; when computing fraction.
+    ldi r24, FLOAT24_BIAS - 1
+    sub r23, r24
+
+    ; Check for underflow
+    brcc _float24_float24_mul_no_underflow
+        ; Underflow occurred. Set to 0.
+        clr r16
+        clr r17
+        clr r18
+
+        rjmp _float24_float24_mul_exit
+
+    _float24_float24_mul_no_underflow:
+
+    ; Check for overflow.
+    cpi r23, EXP2(FLOAT24_EXPONENT_BITS) - 1
+    brlo _float24_float24_mul_no_overflow
+        ; Overflow occurred. Set to +/- infinite.
+        clr r16
+        clr r17
+        ldi r18, 0b01111111
+        or r18, r19
+
+        rjmp _float24_float24_mul_exit
+
+    _float24_float24_mul_no_overflow:
+
+    push r19
+    push r20
+    push r21
+
+    ; Compute fraction.
+    mov r19, r21
+    mov r18, r20
+    ; Shift-in the implicit '1'.
+    sec
+    ror r19
+    ror r18
+    ; The same for the other number.
+    sec
+    ror r17
+    ror r16
+    ; Multiplicand is already placed into r17:16, multiplier inside r19:18.
+    ; Result will reside at r21:18.
+    rcall mul16u
+
+    ; Move two highest bytes into new float24, the less significant ones don't
+    ; fit into a float24 due to precision.
+    mov r17, r21
+    mov r16, r20
+
+    ; Normalize again.
+    mov r20, r17
+    andi r20, 0b10000000
+    brne single_norm_shift
+        ; Double normalization shift needed. But more than two shifts aren't
+        ; needed for any case.
+        lsl r19
+        rol r16
+        rol r17
+        dec r23
+    single_norm_shift:
+    lsl r19
+    rol r16
+    rol r17
+
+    pop r21
+    pop r20
+    pop r19
+
+    ; Assemble sign + exponent.
+    or r19, r23
+    mov r18, r19
+
+    _float24_float24_mul_exit:
+
+    pop r24
+    pop r23
+    pop r19
+
+    ret
+
+
 ; Checks if the given float24 (r18:16) is infinite.
 ; If so, r19 = 1, else r19 = 0.
 float24_isinf:
