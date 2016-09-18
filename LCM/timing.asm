@@ -193,7 +193,7 @@ timer_create:
     ret
 
 
-; Returns the number of cycles elapsed as a 32bit number (TODO signed or unsigned? -> I think unsigned).
+; Returns the number of cycles elapsed as a 32bit unsigned integer.
 ;
 ; The result is placed into the registers r0-3.
 ;
