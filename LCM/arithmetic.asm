@@ -172,4 +172,39 @@ div32u:
             sec
             rjmp _arithmetic_div32u_loop
 
+
+; Performs a 16bit x 16bit unsigned multiplication.
+;
+; Multiplicand is placed into r17:16, multiplier inside r19:18. Result will
+; reside at r21:18.
+mul16u:
+    push r22
+
+    ; Clear two highest result bytes.
+    clr r21
+    clr r20
+
+    ; Initialize loop counter.
+    ldi r22, 16
+
+    lsr r19
+    ror r18
+    _arithmethic_mul16u_loop:
+        brcc _arithmethic_mul16u_noad8
+            add r20, r16
+            adc r21, r17
+        _arithmethic_mul16u_noad8:
+        ror r21
+        ror r20
+        ror r19
+        ror r18
+
+        dec r22
+
+        brne _arithmethic_mul16u_loop
+
+    pop r22
+
+    ret
+
 .endif
