@@ -103,6 +103,9 @@
     <Compile Include="arithmetic.asm">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="float24.asm">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="lcd.asm">
       <SubType>Code</SubType>
     </Compile>
