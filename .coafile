@@ -1,5 +1,5 @@
 [Default]
-files = LCM/*.asm, README.md
+files = LCM/*.asm, README.md, utils/*.py
 
 default_actions = SpaceConsistencyBear: ApplyPatchAction
 
