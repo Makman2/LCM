@@ -20,4 +20,66 @@
 .equ FLOAT24_FRACTION_BITS = 16
 .equ FLOAT24_BIAS = 63
 
+
+; Converts a 32bit int (passed via r19:16) into a float24 (returned in r18:16).
+float24_from_unsigned_int32:
+    push r19
+    push r20
+    push r21
+
+    tst r19
+    brne _float24_float24_from_unsigned_int32_not_zero
+    tst r18
+    brne _float24_float24_from_unsigned_int32_not_zero
+    tst r17
+    brne _float24_float24_from_unsigned_int32_not_zero
+    tst r16
+    brne _float24_float24_from_unsigned_int32_not_zero
+
+    ; Need to catch this special case as this would fall into the subnormal
+    ; domain of floats. In this case just return, because the representations
+    ; for floats and unsigned ints for 0 is the same.
+    rjmp _float24_float24_from_unsigned_int32_return
+
+    _float24_float24_from_unsigned_int32_not_zero:
+
+    ; We convert a *32bit* int, so we start with 32-1.
+    ldi r20, 31
+    _float24_float24_from_unsigned_int32_loop:
+        mov r21, r19
+        andi r21, 0b10000000
+        brne _float24_float24_from_unsigned_int32_break
+
+        lsl r16
+        rol r17
+        rol r18
+        rol r19
+
+        dec r20
+        rjmp _float24_float24_from_unsigned_int32_loop
+    _float24_float24_from_unsigned_int32_break:
+
+    ; Due to the implicit '1' in the IEEE notation, we shift once again.
+    lsl r16
+    rol r17
+    rol r18
+    rol r19
+    ; No need to decrement the counter again, that's why we started above
+    ; with 32-*1*.
+
+    ; Assemble float16.
+    mov r16, r18
+    mov r17, r19
+    ; No need to check for overflow-cases, an int32 fits into a float24 always.
+    ldi r18, FLOAT24_BIAS
+    add r18, r20
+
+    _float24_float24_from_unsigned_int32_return:
+
+    pop r21
+    pop r20
+    pop r19
+
+    ret
+
 .endif
