@@ -3,3 +3,6 @@
 
 # coala
 *.orig
+
+# Python
+__pycache__/
