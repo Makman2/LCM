@@ -10,6 +10,7 @@
 .equ lcdlightport = PORTD
 .equ lcdlight = PD7
 
+; FIXME Don't use global register, this is bad. Use a variable.
 .def curpos = r23
 
 
