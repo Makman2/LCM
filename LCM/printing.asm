@@ -250,8 +250,8 @@ print_decimal_dword_unsigned:
 
         ; Initialize with ASCII number offset.
         ldi r21, 0x30
-        ; 'given-dword modulo 10' can't be higher than 9, which fits into
-        ; a single register. So we just need to take the lowest result byte.
+        ; Remainder can't be higher than 9, which fits into a single register.
+        ; So we just need to take the lowest result byte.
         add r21, r8
 
         ; And push char on stack, as the numbers need to be reverted for
