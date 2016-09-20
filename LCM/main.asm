@@ -35,7 +35,10 @@ main:
             cpse r16, r17
             rjmp _main_main_retry_measure
 
-        ; TODO Print result accordingly.
+        ; Calculate real capacitance.
+        rcall calculate_capacitance_from_time_difference
+
+        ; Print result.
         rcall print_result
 
         ; And continue measuring forever...
@@ -119,7 +122,7 @@ discharge_capacitor:
 
 ; Starts capacitor-charging and capacitance measuring.
 ;
-; TODO Currently return in r3:0 the ticks measured.
+; Returns the time in ticks/cycles measured (inside r3:0).
 measure:
     push r17
     push r18
@@ -170,10 +173,6 @@ measure:
         rjmp _main_measure_exit
     _main_measure_turn_switch_did_not_change:
 
-    ; Get according measuring domain.
-    mov r16, r18
-    rcall calculate_capacitance_from_time_difference
-
     ; Reset stack.
     out SPL, XL
     out SPH, XH
@@ -191,73 +190,148 @@ measure:
     ret
 
 
+.equ DOMAIN_F = 0
+.equ DOMAIN_mF = 1
+.equ DOMAIN_microF = 2
+.equ DOMAIN_nF = 3
+.equ DOMAIN_pF = 4
+
+
 ; Calculates the capacitance.
 ;
-; Takes as input from r0:3 the measured time of the measuring-circuit, and
-; inside r16 the last state of PINB (though only PB0, PB1 and PB2 are relevant)
+; Takes as input from r0:3 the measured time of the measuring-circuit.
 ;
-; Returns TODO Currently nothing, just the time difference in r0:3
+; Returns the float24 result representing the capacity inside r18:16 and inside
+; r19 the domain.
 calculate_capacitance_from_time_difference:
-    sbrs r16, PB1
-    rjmp _calculate_capacitance_from_time_difference_mF_domain
-    sbrs r16, PB2
-    rjmp _calculate_capacitance_from_time_difference_microF_domain
+    push r20
+    push r21
+    push r22
+
+    ; Convert measured time into a float24 (lying in r18:16).
+    mov r19, r3
+    mov r18, r2
+    mov r17, r1
+    mov r16, r0
+    rcall float24_from_unsigned_int32
+
+    sbic PINB, PB1
+    rjmp _main_calculate_capacitance_from_time_difference_microF_domain
+    sbic PINB, PB0
+    rjmp _main_calculate_capacitance_from_time_difference_mF_domain
         ; else case
-        ; nF domain -> PB0 = high
-        ; TODO
-        rjmp _calculate_capacitance_from_time_difference_endif
+        ; nF domain -> PB2 = high
 
-    _calculate_capacitance_from_time_difference_mF_domain:
-        ; mF domain -> PB1 = high
-        ; TODO
-        rjmp _calculate_capacitance_from_time_difference_endif
+        ; zeta = 0.0010305242435442532
+        load_float24 r22, r21, r20, 0x350E25
+        ldi r19, DOMAIN_nF
 
-    _calculate_capacitance_from_time_difference_microF_domain:
-        ; microF domain -> PB2 = high
-        ; TODO
+        rjmp _main_calculate_capacitance_from_time_difference_endif
 
-    _calculate_capacitance_from_time_difference_endif:
+    _main_calculate_capacitance_from_time_difference_microF_domain:
+        ; microF domain -> PB1 = high
+
+        ; zeta = 0.0001854943638379656
+        load_float24 r22, r21, r20, 0x328502
+        ldi r19, DOMAIN_microF
+
+        rjmp _main_calculate_capacitance_from_time_difference_endif
+
+    _main_calculate_capacitance_from_time_difference_mF_domain:
+        ; mF domain -> PB0 = high
+
+        ; zeta = 0.00037098872767593117
+        load_float24 r22, r21, r20, 0x338502
+        ldi r19, DOMAIN_mF
+
+    _main_calculate_capacitance_from_time_difference_endif:
+
+    rcall float24_mul
+
+    pop r22
+    pop r21
+    pop r20
 
     ret
 
 
-description_text: .db "cycles at 16MHz", 0
+DOMAIN_STRING_F: .db "F", 0
+DOMAIN_STRING_mF: .db "mF", 0, 0
+; FIXME Use greek 'mu' character.
+DOMAIN_STRING_microF: .db "microF", 0, 0
+DOMAIN_STRING_nF: .db "nF", 0, 0
+DOMAIN_STRING_pF: .db "pF", 0, 0
+STRING_NOT_PRINTABLE: .db "TOO BIG", 0
 
 
 ; Prints the result from 'measure' to the LCD display.
 ;
-; TODO Currently takes r3:0 with the measured time.
+; Takes in the float24 value to print into r18:16. The measuring domain is
+; accepted via r19.
 print_result:
-    push r12
-    push r13
-    push r14
-    push r15
-    push r16
+    push r19
+    push r20
     push ZL
     push ZH
 
     rcall reset_cursor
 
-    mov r15, r3
-    mov r14, r2
-    mov r13, r1
-    mov r12, r0
+    ; print_float24 below uses r19 as return value register.
+    mov r20, r19
 
-    rcall print_decimal_dword_unsigned
+    ; Print actually measured value.
+    rcall print_float24
 
-    ; Select second row.
-    ldi r16, 0x10
-    rcall set_cursor
+    ; Check error code of print_float24
+    cpi r19, PRINT_FLOAT24_SUCCESS
+    brne _main_print_result_not_printable
 
-    load_word_address_into_Z description_text
-    rcall print_string
+        ; Load the unit suffix string.
+        cpi r20, DOMAIN_pF
+        breq _main_print_result_DOMAIN_pF
+        cpi r20, DOMAIN_nF
+        breq _main_print_result_DOMAIN_nF
+        cpi r20, DOMAIN_microF
+        breq _main_print_result_DOMAIN_microF
+        cpi r20, DOMAIN_mF
+        breq _main_print_result_DOMAIN_mF
+            ; else case -> r19 = DOMAIN_F
+            load_word_address_into_Z DOMAIN_STRING_F
+            rjmp _main_print_result_DOMAIN_endif
+
+        _main_print_result_DOMAIN_pF:
+            load_word_address_into_Z DOMAIN_STRING_pF
+            rjmp _main_print_result_DOMAIN_endif
+
+        _main_print_result_DOMAIN_nF:
+            load_word_address_into_Z DOMAIN_STRING_nF
+            rjmp _main_print_result_DOMAIN_endif
+
+        _main_print_result_DOMAIN_microF:
+            load_word_address_into_Z DOMAIN_STRING_microF
+            rjmp _main_print_result_DOMAIN_endif
+
+        _main_print_result_DOMAIN_mF:
+            load_word_address_into_Z DOMAIN_STRING_mF
+            rjmp _main_print_result_DOMAIN_endif
+
+        _main_print_result_DOMAIN_endif:
+
+        ; Print the unit suffix string.
+        rcall print_string
+
+        rjmp _main_print_result_exit
+
+    _main_print_result_not_printable:
+        ; Return value of print_float24 is PRINT_FLOAT24_OVERFLOW.
+        load_word_address_into_Z STRING_NOT_PRINTABLE
+        rcall print_string
+
+    _main_print_result_exit:
 
     pop ZH
     pop ZL
-    pop r16
-    pop r15
-    pop r14
-    pop r13
-    pop r12
+    pop r20
+    pop r19
 
     ret
