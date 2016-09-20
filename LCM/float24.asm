@@ -251,4 +251,21 @@ float24_isinf:
 
     ret
 
+
+; Loads a float24 immediately from given numeric representation.
+;
+; Example:
+; ; Loads the float24 constant '400.0'
+; load_float24 r18, r17, r16, 0x479000
+;
+; This is the same as:
+; ldi r18, 0x47
+; ldi r17, 0x90
+; ldi r16, 0x00
+.macro load_float24
+    ldi @0, BYTE3(@3)
+    ldi @1, BYTE2(@3)
+    ldi @2, LOW(@3)
+.endmacro
+
 .endif
