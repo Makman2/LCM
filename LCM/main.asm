@@ -46,8 +46,10 @@ main:
 
 
 ; Manual termination with 0, 0 is needed, to get an even number of bytes and
-; to terminate string with 0.
-welcome_message: .db "  PROJECT LCM!  ", 0, 0
+; to terminate string with 0. Plus: Print "konnichiwa!" in katakana :)
+welcome_message: .db "  PROJECT LCM!  ", \
+                     "     ", 0xBA, 0xDD, 0xC6, 0xC1, 0xDC, "!     ", \
+                     0, 0
 
 
 ; Prints the welcome message.
