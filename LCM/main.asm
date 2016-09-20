@@ -257,8 +257,7 @@ calculate_capacitance_from_time_difference:
 
 DOMAIN_STRING_F: .db "F", 0
 DOMAIN_STRING_mF: .db "mF", 0, 0
-; FIXME Use greek 'mu' character.
-DOMAIN_STRING_microF: .db "microF", 0, 0
+DOMAIN_STRING_microF: .db 0xE4, "F", 0, 0
 DOMAIN_STRING_nF: .db "nF", 0, 0
 DOMAIN_STRING_pF: .db "pF", 0, 0
 STRING_NOT_PRINTABLE: .db "TOO BIG", 0
