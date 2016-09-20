@@ -26,7 +26,7 @@ start:
 ; Initializes pins, timers, interrupt handlers etc.
 initialize:
     ; Set the pins PB0-2 as input pins (these are connected to the switch that
-    ; selects the measurement domain) and PB3 too (TODO).
+    ; selects the measurement domain) and PB3 too.
     ldi r16, 0b11110000
     out DDRB, r16
 
