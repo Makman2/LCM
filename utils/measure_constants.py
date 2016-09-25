@@ -31,6 +31,9 @@ V_mosfet = 0.7
 # The comparator threshold voltage (in V).
 V_comparator_threshold = 1.23
 
+# Correction factors.
+correction_factors = [1, 1, 1]
+
 #===============================================================================
 
 pins = ['PB0', 'PB1', 'PB2']
@@ -55,13 +58,9 @@ pins = ['PB0', 'PB1', 'PB2']
 #
 # C = [DOMAIN] = zeta * n, zeta = kappa / domain
 
-
-# TODO: Make measurements for q
-q = 1
-
 V_load = V_charge - V_mosfet
 k = log(1 - V_comparator_threshold / V_load)
-kappas = list(-q / (f * r * k) for r in R)
+kappas = list(-q / (f * r * k) for q, r in zip(correction_factors, R))
 zetas =  list(kappa / DOMAIN_MAP[domain]
               for kappa, domain in zip(kappas, measuring_domains))
 
