@@ -74,16 +74,16 @@ print('Analog Comparator threshold (V_comparator_threshold): {}V'.format(
           V_comparator_threshold))
 print()
 
-tablerow_formatstring = '{:4} {:8} {:15} {:<25} {:<25} {:10}'
+tablerow_formatstring = '{:4} {:8} {:15} {:<10} {:<25} {:<25} {:10}'
 
-head = tablerow_formatstring.format('PIN', 'R', 'Domain', 'kappa', 'zeta',
+head = tablerow_formatstring.format('PIN', 'R', 'Domain', 'q', 'kappa', 'zeta',
                                     'to_float24(zeta)')
 print(head)
 print('-' * len(head))
 
-for pin, r, domain, kappa, zeta in zip(pins, R, measuring_domains,
-                                       kappas, zetas):
+for pin, r, domain, q, kappa, zeta in zip(pins, R, measuring_domains,
+                                          correction_factors, kappas, zetas):
     print(tablerow_formatstring.format(
-        pin, r, domain, kappa, zeta, hex(to_float24(zeta))))
+        pin, r, domain, round(q, 5), kappa, zeta, hex(to_float24(zeta))))
 
 print()
