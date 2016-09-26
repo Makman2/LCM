@@ -15,7 +15,7 @@ DOMAIN_MAP = {DOMAIN.F: 1,
 
 # These are the resistances used (in Ohm). The leftmost one is the first one
 # enabled when using the turn-switch.
-R = [0.5, 1000, 180000]
+R = [0.5, 1000, 360000]
 # These are the domains we show on the display. This allows numeric tuning for
 # capacitance calculation.
 measuring_domains = [DOMAIN.mF, DOMAIN.microF, DOMAIN.nF]
