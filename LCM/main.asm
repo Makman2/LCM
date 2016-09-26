@@ -224,8 +224,8 @@ calculate_capacitance_from_time_difference:
         ; else case
         ; nF domain -> PB2 = high
 
-        ; zeta = 0.0010305242435442532
-        load_float24 r22, r21, r20, 0x350E25
+        ; zeta = 0.0005644062008674696
+        load_float24 r22, r21, r20, 0x3427E9
         ldi r19, DOMAIN_nF
 
         rjmp _main_calculate_capacitance_from_time_difference_endif
@@ -233,8 +233,8 @@ calculate_capacitance_from_time_difference:
     _main_calculate_capacitance_from_time_difference_microF_domain:
         ; microF domain -> PB1 = high
 
-        ; zeta = 0.0001854943638379656
-        load_float24 r22, r21, r20, 0x328502
+        ; zeta = 0.0002233905780124494
+        load_float24 r22, r21, r20, 0x32D47B
         ldi r19, DOMAIN_microF
 
         rjmp _main_calculate_capacitance_from_time_difference_endif
@@ -242,8 +242,8 @@ calculate_capacitance_from_time_difference:
     _main_calculate_capacitance_from_time_difference_mF_domain:
         ; mF domain -> PB0 = high
 
-        ; zeta = 0.00037098872767593117
-        load_float24 r22, r21, r20, 0x338502
+        ; zeta = 7.705908372886626e-05
+        load_float24 r22, r21, r20, 0x314335
         ldi r19, DOMAIN_mF
 
     _main_calculate_capacitance_from_time_difference_endif:
